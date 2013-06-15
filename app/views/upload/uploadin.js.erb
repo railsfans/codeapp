@@ -1,0 +1,91 @@
+var upload
+var window
+function uploadfile(){
+    if(!upload){
+  upload =new Ext.create('Ext.form.Panel', {
+        width: 500,
+        frame: true,
+        title: 'File Upload Form',
+        bodyPadding: '10 10 0',
+        height: 300,
+        defaults: {
+            anchor: '100%',
+            allowBlank: false,
+            msgTarget: 'side',
+            labelWidth: 50
+        },
+        items: [
+        {
+            xtype: 'textfield',
+            fieldLabel: 'Name'
+        },
+          {
+            xtype: 'filefield',
+            id: 'form-file',
+            emptyText: 'Select an image',
+            fieldLabel: 'Photo',
+            name: 'photo',
+            buttonText: '',
+            buttonConfig: {
+                iconCls: 'upload-icon'
+            },
+            regex: /(.)+((\.csv)|(\.xls)(\w)?)$/i,
+            regexText: 'wrong file extension'
+        }],
+
+        buttons: [{
+            text: 'Save',
+            handler: function(){
+               var form = this.up('form').getForm();
+                if(form.isValid()){
+                    form.submit({
+                        url: 'upload/upload.json',
+                        waitMsg: 'Uploading your photo...',
+                        success: function(fp, o) {
+                        //   show_tip_message("success"),
+                           show_tip_message(o.result.message),
+													 form.reset(),
+													 window.close()
+													 console.log(o)
+                        }
+                    });
+                }
+             
+            }
+        },{
+            text: 'Reset',
+            handler: function() {
+                this.up('form').getForm().reset();
+            }
+        }]
+    });
+}
+ window = new Ext.Window({
+  //      title:"edit",
+        iconCls:"silk-add",
+         width:280,
+         height:180,
+        resizable:false,
+        layout:"fit",
+        closeAction:'close',
+        plain: true,
+        constrainHeader:true,
+        modal:true,
+        bodyStyle: 'padding:5px;',
+        items:[upload]
+    }).show();
+};
+ 
+ var form=Ext.create('Ext.form.Panel', {
+     tbar: [
+			   { xtype: 'button', text: 'upload file', handler: function(){ uploadfile(); } }
+			      ],
+			});
+    
+var work_space = Ext.getCmp('work-space');
+
+work_space.removeAll();
+
+work_space.add(form);
+
+work_space.doLayout();

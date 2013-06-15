@@ -1,0 +1,500 @@
+
+
+Ext.regModel('BookInfo', {
+		    fields: [{name: 'company'}, {name: 'id'}]
+		});
+		
+var bookStore = Ext.create('Ext.data.Store',{
+	model : 'BookInfo',
+	proxy: {
+	         type: 'ajax',
+	         url: 'manager/suppliers.json',
+	         reader: {
+	             type: 'json',
+	             root: 'gridData'
+	         }
+	         }
+});
+
+Ext.regModel('PostInfo', {
+		    fields: [{name: 'province'},{name: 'post'}]
+		});
+var postStore = Ext.create('Ext.data.Store',{
+			model : 'PostInfo',
+			data : [
+				{province:'beijin',post:'100000'},
+				{province:'tongz',post:'101100'},
+				{province:'cangping',post:'102200'},
+				{province:'daxyvg',post:'102600'}
+			]
+		});
+
+		 
+function user_action_handler(type) {
+
+    var form = new Ext.form.Panel({
+        id: 'formss',
+        baseCls: 'x-plain',
+
+        labelWidth: 60,
+
+        border:false,
+
+        layout:"form",
+
+        items: [
+            {xtype:"hidden",name: "id"},
+            {xtype:"textfield",fieldLabel: 'code', name: "code",emptyText:"enter code",allowBlank:false,anchor:'95%', regex : /^(\d{8})$/,
+					   regexText:'only can enter eight number',listeners : {
+       blur : function(o){
+               fillvalue(o.getRawValue());
+                 }
+            }},
+            {xtype:"textfield",fieldLabel: 'name', name: "name",allowBlank:false,anchor:'95%'},
+            {xtype:"textfield",fieldLabel: 'partNum', name: "partNum",allowBlank:false,anchor:'95%'},
+            {xtype:"textfield",fieldLabel: 'footprint', name: "footprint",allowBlank:false,anchor:'95%'},   
+            {xtype:"textfield",fieldLabel: 'unitprice', name: "unitprice",allowBlank:false,anchor:'95%'},
+            {xtype:"textfield",fieldLabel: 'quantity', name: "quantity",allowBlank:false,anchor:'95%'},
+            {xtype:"textfield",fieldLabel: 'manufacturer', name: "manufacturer",allowBlank:false,anchor:'95%'},
+/*			      {
+									xtype : 'combo',
+									fieldLabel:'suppliers list',
+									listConfig : {
+			//							loadingText : 'loading',
+										emptyText : 'no match suppliers',
+										maxHeight : 300
+									},
+			//						minChars : 2,
+			//						queryDelay : 300,
+			//						queryParam : 'company',
+									triggerAction: 'all',
+									store : bookStore,
+									displayField:'company',
+									valueField:'company',
+									queryMode: 'local',
+									typeAhead: true,
+    	 //           forceSelection: true,
+    	//            allowBlank:false,
+    	//            emptyText:"enter code",
+    	            name: 'suppliers',
+    	 //         hiddenName: 'suppliers',
+    	            multiSelect: true,
+    	 //           id: 'combo'
+								},
+								*/
+								 {
+									xtype : 'combo',
+									fieldLabel:'suppliers list',
+									listConfig : {
+										loadingText : 'loading',
+										emptyText : 'no match suppliers',
+										maxHeight : 100
+									},
+									minChars : 1,
+									queryDelay : 300,
+									queryParam : 'company',
+									triggerAction: 'all',
+									store : bookStore,
+									displayField:'company',
+									valueField:'company',
+									queryMode: 'remote',
+									typeAhead: true,
+    	            forceSelection: true,
+    	            allowBlank:false,
+    	            emptyText:"enter code",
+    	            name: 'suppliers',
+    	   //       hiddenName: 'suppliers',
+    	            multiSelect: true,
+    	   /*         listeners: {
+								  change: function(combo, eOpts){
+								   var store = combo.getStore();
+								   var values = [];
+								   Ext.Array.each(combo.value, function(id){
+								       values.push(store.getById(id+''));
+								   });
+								  combo.setValue(values);
+								 }
+                 }
+            */     
+								},
+          {xtype:"textarea",fieldLabel: 'comment', name: "comment",allowBlank:false,anchor:'95%'}
+           
+        ],
+
+        buttonAlign:"center",
+        
+        buttons: [
+
+            {
+                text: 'save',
+
+                handler:function() {
+                   
+                    if (form.getForm().isValid()) {
+                      switch (type) {
+                      case "add":
+                     Ext.Ajax.request({
+									    url: 'manager/material_add',
+									    params: form.getForm().getValues(true,false,false,false),
+						//		    params: {'suppliers': Ext.getCmp('suppliersid').getValue()},
+									    success: function(response){
+									       var obj = Ext.decode(response.responseText);
+	                        if (obj.success) {
+	                             edit_window.close();
+	                             store.reload();
+	                             
+	                        } else {
+	                            show_tip_message("false")
+	                        }
+                          },
+                      failure: function(response) {
+                              show_tip_message("false")
+                          }                
+                      });
+                      break;
+                      case "edit": 
+                       Ext.Ajax.request({
+									    url: 'manager/material_edit',
+									    params: form.getForm().getValues(true,false,false,false),
+									    success: function(response){
+									       var obj = Ext.decode(response.responseText);
+	                        if (obj.success) {
+	                             edit_window.close();
+	                             store.reload();
+	                        } else {
+	                            show_tip_message("false")
+	                        }
+                          },
+                      failure: function(response) {
+                              show_tip_message("false")
+                          }                
+                      });
+                      break;
+               
+                      }     //switch
+                
+                   }       //form
+                    
+                   }      //handler 
+                   
+
+             },                    
+
+            {
+
+                text: 'cancel',
+
+                handler:function() {
+
+                    edit_window.close()
+
+                }
+
+            }
+
+        ]
+
+        });
+
+    var edit_window = new Ext.Window({
+
+        width:380,
+
+        height:400,
+
+        resizable:false,
+
+        layout:"fit",
+
+        closeAction:'close',
+
+        plain: true,
+
+        constrainHeader:true,
+
+        modal:true,
+
+        bodyStyle: 'padding:5px;',
+
+        items:[form]
+
+    });
+
+function fillvalue(value){
+
+ Ext.Ajax.request({
+		    url: 'manager/fillvalue.json',
+		    params: { id : value },
+		    method:  "GET",
+		    success: function(response){
+		       var obj = Ext.decode(response.responseText);
+            if (obj.success) {
+         //        store.reload();
+            console.log(obj.data[0]['code']);
+            form.getForm().setValues({
+                manufacturer: obj.data[0]['manufacturer'],
+                name: obj.data[0]['name'],
+                partNum: obj.data[0]['partNum'],
+                footprint: obj.data[0]['footprint']
+            });
+          
+            show_tip_message("false")
+            } else {
+                show_tip_message("false")
+            } 
+            },
+        failure: function(response) {
+                show_tip_message("false")
+            }                
+        });
+      
+//        alert(value);
+};
+
+  var rows = grid.getSelectionModel().getSelection();
+
+    if (type == "add") {
+
+
+            edit_window.show();
+
+        edit_window.setTitle("add user");
+//bookStore.load();
+    //    edit_window.setIconClass("silk-user_add");
+
+    }  else if(type == "edit"){
+           if(rows.length==1){
+            bookStore.load();
+            bookStore.on("load",function(store, records,options){
+                form.getForm().setValues({suppliers:rows[0].get("suppliers").split(',')})
+            });
+            form.getForm().setValues({
+                id:rows[0].get("id"),
+                name:rows[0].get("name"),
+                partNum:rows[0].get("partNum"),
+                quantity:rows[0].get("quantity"),
+                unitprice:rows[0].get("unitprice"),
+                comment:rows[0].get("comment"),
+                footprint:rows[0].get("footprint"),
+                code: rows[0].get('code'),
+//                suppliers: rows[0].get('suppliers'),
+                manufacturer: rows[0].get('manufacturer')
+            });
+            edit_window.show();
+            }
+            else
+            {
+            show_tip_message("chose a data")
+             }
+          
+
+        }
+        else
+        {
+                     if(rows.length==1){
+                       Ext.Ajax.request({
+									    url: 'manager/material_delete',
+									    params: { id : rows[0].get("id") },
+									    success: function(response){
+									       var obj = Ext.decode(response.responseText);
+	                        if (obj.success) {
+	                             store.reload();
+	                        } else {
+	                            show_tip_message("false")
+	                        }
+                          },
+                      failure: function(response) {
+                              show_tip_message("false")
+                          }                
+                      });
+                      }
+                      else
+                      {
+                       show_tip_message("chose a data")
+                      }
+                   
+        
+        }
+}
+
+
+
+
+ itemsPerPage = 2;   // set the number of items you want per page
+
+
+var store = Ext.create('Ext.data.Store', {
+    id:'simpsonsStore',
+    autoLoad: false,
+    fields:['name', 'code', 'partNum', 'footprint','unitprice','totalprice','quantity','manufacturer','comment','suppliers'],
+    pageSize: itemsPerPage, // items per page
+    proxy: {
+        type: 'ajax',
+        url: 'manager/all.json',  // url that will load data with respect to start and limit params
+        reader: {
+            type: 'json',
+            root: 'gridData',
+            totalProperty: 'totalCount'
+        },
+    extraParams : {
+        value : <%= params[:value].nil? ? 0 : params[:value] %>,
+        search_type: <%= params[:search_type].nil? ? 0 : params[:search_type] %>
+     }
+    }  
+});
+
+// specify segment of data you want to load using params
+store.load({
+    params:{
+        start:0,
+        limit: itemsPerPage,
+
+    }
+});
+////////////
+Ext.regModel('PostInfo', {
+		    fields: [{name: 'province'},{name: 'post'}]
+		});
+		
+var postStore = Ext.create('Ext.data.Store',{
+			model : 'PostInfo',
+			data : [
+				{province:'email',post:'100000'},
+				{province:'name',post:'101100'},
+				{province:'phone',post:'102200'}
+			]
+		});		
+
+function vehicle_search(type){
+
+    if(type=="search"){
+
+        if(Ext.getCmp("search_vehicle").isValid()){
+
+            Ext.getCmp("clear_vehicle_button").enable();
+            store.load({
+					    params:{
+					        start:0,
+					        limit: 2,
+					        value : Ext.getCmp("search_vehicle").getValue(),
+                  search_type: Ext.getCmp("search_in_vehicle_list_id").getValue()
+					    }
+              });
+          
+
+        }else{
+
+            show_tip_message("enter something")
+
+        }
+
+    }else if(type=="clear"){
+
+        Ext.getCmp("clear_vehicle_button").disable();
+        Ext.getCmp("search_vehicle").setValue('');
+        store.load({
+					    params:{
+					        start:0,
+					        limit: 2,
+					    }
+              });
+
+    }
+
+}
+
+///////////
+
+var grid=Ext.create('Ext.grid.Panel', {
+    title: 'Simpsons',
+    store: store,
+    columns: [
+        { header: '<%= t('code') %>',  dataIndex: 'code', flex: 1, align: 'center' },
+        { header: '<%= t('name') %>',  dataIndex: 'name', flex: 1, align: 'center'  },
+        { header: '<%= t('partNum') %>',  dataIndex: 'partNum', flex: 1, align: 'center'  },
+        { header: '<%= t('footprint') %>',  dataIndex: 'footprint', flex: 1, align: 'center'  },
+        { header: '<%= t('unitprice') %>',  dataIndex: 'unitprice', flex: 1, align: 'center'  },
+        { header: '<%= t('quantity') %>',  dataIndex: 'quantity', flex: 1 , align: 'center' },
+        { header: '<%= t('totalprice') %>',  dataIndex: 'totalprice' , flex: 1, align: 'center' },
+        { header: '<%= t('manufacturer') %>',  dataIndex: 'manufacturer', flex: 1, align: 'center'  },
+        { header: '<%= t('suppliers') %>',  dataIndex: 'suppliers' , flex: 1, align: 'center' },
+        { header: '<%= t('comment') %>',  dataIndex: 'comment' , flex: 1, align: 'center' },
+            {
+                menuDisabled: true,
+                sortable: false,
+                xtype: 'actioncolumn',
+                width: 50,
+          //      iconCls:"silk-zoom",
+                tooltip: 'Sell stock',
+                  handler: function(grid, rowIndex, colIndex) {
+          //              var rec = store.getAt(rowIndex);
+          //              alert("Sell " + rec.get('company'));
+                    },
+          //      items: [{
+          //          icon   : 'shared/icons/fam/delete.gif',  // Use a URL in the icon config
+           //     }]
+            }
+    ],
+    width: 400,
+    height: 125,
+    selType: 'rowmodel',
+    dockedItems: [{
+        xtype: 'pagingtoolbar',
+        store: store,   // same store GridPanel is using
+        dock: 'bottom',
+        displayInfo: true,   
+        items:[
+                '-',
+                { text: '<%= t('add') %>', iconCls:"silk-user_add", handler: function() {
+                    user_action_handler("add")
+                }},
+                { text: '<%= t('edit') %>', iconCls:"silk-user_edit", handler: function() {
+                    user_action_handler("edit");
+          //          var rows = grid.getSelectionModel().getSelection();
+                }},
+                { text:  '<%= t('delete') %>', iconCls:"silk-user_delete", handler: function() {
+                    user_action_handler("delete")
+                }},
+                {
+						    	xtype: 'textfield',
+						    	hideLabel: true,
+						    	width: 150,
+						    	id: "search_vehicle",
+						    	allowBlank:false,
+						    },
+						    {
+                  id:"search_in_vehicle_list_id",
+									xtype : 'combo',
+									listConfig : {
+										emptyText : 'no match data', 
+										maxHeight : 60 
+									},
+  								name:'post',
+									autoSelect : true,
+//								fieldLabel:'post',
+									triggerAction: 'all', 
+									store : postStore, 
+									displayField:'province', 
+									valueField:'post', 
+									queryMode: 'local', 
+									forceSelection : true, 
+									typeAhead : true, 
+									value:'101100',
+//								multiSelect: true
+								},
+								{ text: '<%= t('search') %>',id:"search_vehicle_button", iconCls:"silk-zoom", handler:function(){vehicle_search("search")} },
+                { text: '<%= t('clear') %>', id:"clear_vehicle_button", disabled:true, handler: function(){vehicle_search("clear")} }
+                ]       
+    }],
+
+});
+
+
+
+var work_space = Ext.getCmp('work-space');
+
+work_space.removeAll();
+
+work_space.add(grid);
+
+work_space.doLayout();

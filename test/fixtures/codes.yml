@@ -1,0 +1,27 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  code: MyString
+  name: MyString
+  parent_id: 1
+  describe: MyText
+  footprint: MyString
+  manufacturer: MyString
+  partNum: MyString
+  quantity: 1
+  unitprice: 1.5
+  comment: MyText
+  codeLength: 
+
+two:
+  code: MyString
+  name: MyString
+  parent_id: 1
+  describe: MyText
+  footprint: MyString
+  manufacturer: MyString
+  partNum: MyString
+  quantity: 1
+  unitprice: 1.5
+  comment: MyText
+  codeLength: 
